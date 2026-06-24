@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>CyberMorph | Chat Workspace</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Shared Component Logic & Tailwind Config -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#dec800",
+                        "secondary-container": "#e4e2e1",
+                        "tertiary-container": "#00feff",
+                        "surface-charcoal": "#2E2E2E",
+                        "outline-variant": "#cdc7aa",
+                        "surface-dim": "#e0dac7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#726600",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#333123",
+                        "on-tertiary-fixed": "#002020",
+                        "brand-yellow": "#FFE600",
+                        "tertiary-fixed-dim": "#00dcdd",
+                        "neutral-gray-mid": "#E0E0E0",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#faf3df",
+                        "surface-container": "#f4eeda",
+                        "surface": "#fff9e9",
+                        "primary-fixed-dim": "#dec800",
+                        "on-primary": "#ffffff",
+                        "primary": "#6a5f00",
+                        "on-surface": "#1e1c10",
+                        "on-primary-fixed": "#201c00",
+                        "primary-container": "#ffe600",
+                        "secondary": "#5f5e5e",
+                        "outline": "#7c775f",
+                        "secondary-fixed": "#e4e2e1",
+                        "neutral-gray-light": "#F6F6F6",
+                        "surface-container-high": "#eee8d4",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e8e2cf",
+                        "on-surface-variant": "#4b4731",
+                        "on-secondary-container": "#656464",
+                        "on-tertiary-container": "#007272",
+                        "error-container": "#ffdad6",
+                        "background": "#fff9e9",
+                        "on-background": "#1e1c10",
+                        "on-secondary-fixed-variant": "#474747",
+                        "surface-bright": "#fff9e9",
+                        "tertiary": "#006a6a",
+                        "on-tertiary-fixed-variant": "#004f50",
+                        "secondary-fixed-dim": "#c8c6c6",
+                        "on-primary-fixed-variant": "#504700",
+                        "tertiary-fixed": "#00fbfc",
+                        "inverse-on-surface": "#f7f1dd",
+                        "primary-fixed": "#fde400",
+                        "interactive-blue": "#0072C6",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e8e2cf",
+                        "surface-tint": "#6a5f00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "section-gap": "80px",
+                        "unit": "8px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display-xl": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "quote-text": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #E0E0E0;
+            border-radius: 10px;
+        }
+
+        .progress-shimmer {
+            background: linear-gradient(90deg, #FFE600 0%, #FFF480 50%, #FFE600 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-white text-surface-charcoal overflow-hidden h-screen flex">
+    <!-- Left Panel: SideNavBar (Shared Component) -->
+    <aside
+        class="hidden md:flex flex-col h-full w-64 bg-neutral-gray-light border-r border-neutral-gray-mid py-6 px-4 shrink-0">
+        <div class="mb-8 px-2">
+            <h1 class="text-headline-md font-bold text-on-surface">CyberMorph</h1>
+            <p class="text-[10px] uppercase tracking-widest text-secondary font-bold">Enterprise Instance</p>
+        </div>
+        <button
+            class="mb-8 w-full py-3 px-4 bg-brand-yellow text-surface-charcoal font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all">
+            <span class="material-symbols-outlined">chat_bubble</span>
+            <span class="font-label-sm text-label-sm">New Chat</span>
+        </button>
+        <nav class="flex-1 space-y-1">
+            <!-- Active State: Direct Messages (as it fits Chat Workspace context) -->
+            <div
+                class="flex items-center gap-3 p-3 transition-all cursor-pointer text-secondary hover:bg-neutral-gray-mid rounded-lg">
+                <span class="material-symbols-outlined">home</span>
+                <span class="font-label-sm text-label-sm">Home</span>
+            </div>
+            <div
+                class="flex items-center gap-3 p-3 transition-all cursor-pointer bg-brand-yellow text-on-primary-fixed-variant font-bold rounded-lg">
+                <span class="material-symbols-outlined">chat_bubble</span>
+                <span class="font-label-sm text-label-sm">Direct Messages</span>
+            </div>
+            <div
+                class="flex items-center gap-3 p-3 transition-all cursor-pointer text-secondary hover:bg-neutral-gray-mid rounded-lg">
+                <span class="material-symbols-outlined">folder_shared</span>
+                <span class="font-label-sm text-label-sm">Projects</span>
+            </div>
+            <div
+                class="flex items-center gap-3 p-3 transition-all cursor-pointer text-secondary hover:bg-neutral-gray-mid rounded-lg">
+                <span class="material-symbols-outlined">analytics</span>
+                <span class="font-label-sm text-label-sm">Analytics</span>
+            </div>
+            <div
+                class="flex items-center gap-3 p-3 transition-all cursor-pointer text-secondary hover:bg-neutral-gray-mid rounded-lg">
+                <span class="material-symbols-outlined">inventory_2</span>
+                <span class="font-label-sm text-label-sm">Archives</span>
+            </div>
+        </nav>
+        <div class="mt-auto border-t border-neutral-gray-mid pt-4 space-y-1">
+            <div
+                class="flex items-center gap-3 p-3 transition-all cursor-pointer text-secondary hover:bg-neutral-gray-mid rounded-lg">
+                <span class="material-symbols-outlined">help</span>
+                <span class="font-label-sm text-label-sm">Help</span>
+            </div>
+            <div
+                class="flex items-center gap-3 p-3 transition-all cursor-pointer text-secondary hover:bg-neutral-gray-mid rounded-lg">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="font-label-sm text-label-sm">Sign Out</span>
+            </div>
+        </div>
+    </aside>
+    <!-- Center Panel: Main Chat Area -->
+    <main class="flex-1 flex flex-col min-w-0 bg-white">
+        <!-- Chat Header -->
+        <header class="h-16 flex items-center justify-between px-6 border-b border-neutral-gray-mid">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-brand-yellow flex items-center justify-center">
+                    <span class="material-symbols-outlined text-surface-charcoal text-sm">smart_toy</span>
+                </div>
+                <div>
+                    <h2 class="font-label-sm text-label-sm text-surface-charcoal">MorphAgent Alpha</h2>
+                    <p class="text-[11px] text-secondary">Active Project: Forensic Intelligence</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span
+                    class="material-symbols-outlined text-secondary cursor-pointer hover:text-surface-charcoal">search</span>
+                <span
+                    class="material-symbols-outlined text-secondary cursor-pointer hover:text-surface-charcoal">more_vert</span>
+            </div>
+        </header>
+        <!-- Messages Flow -->
+        <section class="flex-1 overflow-y-auto p-6 space-y-8">
+            <!-- User Message -->
+            <div class="flex justify-end gap-4 max-w-3xl ml-auto">
+                <div
+                    class="bg-neutral-gray-light p-4 rounded-xl rounded-tr-none border border-neutral-gray-mid shadow-sm">
+                    <p class="font-body-md text-body-md leading-relaxed text-on-surface">
+                        Initiate a scan for the unauthorized workstation 12-XF. Map any digital signatures that don't
+                        align with the standard corporate profile and flag the variance.
+                    </p>
+                </div>
+                <div class="w-10 h-10 rounded-full shrink-0 overflow-hidden border border-neutral-gray-mid">
+                    <img class="w-full h-full object-cover"
+                        data-alt="A professional headshot of a corporate executive in a minimalist studio setting. The person is wearing a tailored charcoal suit and has a neutral, confident expression. High-key soft lighting emphasizes the professional and clean aesthetic, with a slight warm yellow tint in the background shadows to align with the brand identity."
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDu4YDSUy0R-X0gyDjKM7T_q3TQOVlzzxO6nPDZ0M1YD5Rxe85rcVlyTKG9YJYrEonpbfub667BFr6c8Lna9ldMLHjMFRDc5vKGGmqVdQG0Tc-A8LRcjRUg9nVNwB9PkjDylWV94yaIlzSODkisAI6ho6AVjjUjIFURs6B-wkcKWLZ-bEBCgAuJ-HFmTmAweUb6FBwVbTPAqrPUC47pkbCjHkFfIVTym4quXD-c6Og4KgX1YQu_-sZzJ6NqZ5srFotFMb5Bntwef8" />
+                </div>
+            </div>
+            <!-- Agent Thinking State -->
+            <div class="flex gap-4 max-w-3xl">
+                <div class="w-10 h-10 rounded-lg shrink-0 bg-surface-charcoal flex items-center justify-center">
+                    <span class="material-symbols-outlined text-brand-yellow">smart_toy</span>
+                </div>
+                <div class="flex-1 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold uppercase tracking-widest text-primary">CyberMorph AI
+                            Agent</span>
+                        <span class="w-2 h-2 rounded-full bg-brand-yellow animate-pulse"></span>
+                    </div>
+                    <!-- Thinking Card -->
+                    <div class="border border-neutral-gray-mid p-5 rounded-xl bg-neutral-gray-light/30">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="material-symbols-outlined text-on-surface-variant text-lg">psychology</span>
+                                <span class="font-label-sm text-label-sm font-bold text-on-surface">Intent: Digital
+                                    Fingerprinting</span>
+                            </div>
+                            <span class="text-xs text-secondary font-mono">74% Processed</span>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="w-full h-1.5 bg-neutral-gray-mid rounded-full overflow-hidden">
+                            <div class="h-full progress-shimmer w-[74%] rounded-full"></div>
+                        </div>
+                        <!-- Activity Logs -->
+                        <div class="mt-4 space-y-2">
+                            <div class="flex items-center gap-3 text-xs text-secondary-fixed-dim">
+                                <span class="material-symbols-outlined text-sm text-brand-yellow">check_circle</span>
+                                <span>Verifying workstation ID 12-XF registry keys...</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-xs text-secondary-fixed-dim">
+                                <span class="material-symbols-outlined text-sm text-brand-yellow">check_circle</span>
+                                <span>Accessing Enterprise Asset Inventory...</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-xs text-on-surface">
+                                <span class="material-symbols-outlined text-sm animate-spin">sync</span>
+                                <span>Comparing metadata signatures with Gold Profile...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Chat Input -->
+        <footer class="p-6 pt-0">
+            <div class="max-w-4xl mx-auto">
+                <div
+                    class="relative flex items-end gap-3 p-2 bg-white border-2 border-neutral-gray-mid focus-within:border-brand-yellow rounded-xl transition-all duration-200">
+                    <button class="p-2 text-secondary hover:text-surface-charcoal">
+                        <span class="material-symbols-outlined">attach_file</span>
+                    </button>
+                    <textarea
+                        class="flex-1 py-2 px-1 border-none focus:ring-0 resize-none font-body-md text-body-md placeholder:text-neutral-gray-mid max-h-32"
+                        placeholder="Type a command or follow-up question..." rows="1"></textarea>
+                    <button
+                        class="p-3 bg-surface-charcoal text-white rounded-lg hover:bg-black transition-colors flex items-center justify-center">
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </div>
+                <div class="flex justify-center mt-3 gap-6">
+                    <div
+                        class="flex items-center gap-2 text-[11px] text-secondary uppercase font-bold tracking-tight cursor-pointer hover:text-primary">
+                        <span class="material-symbols-outlined text-xs">history</span> Recent Actions
+                    </div>
+                    <div
+                        class="flex items-center gap-2 text-[11px] text-secondary uppercase font-bold tracking-tight cursor-pointer hover:text-primary">
+                        <span class="material-symbols-outlined text-xs">lock</span> Confidential Workspace
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </main>
+    <!-- Right Panel: Pipeline Context (Collapsible) -->
+    <aside
+        class="hidden xl:flex flex-col w-80 border-l border-neutral-gray-mid bg-neutral-gray-light/50 transition-all duration-300"
+        id="right-panel">
+        <div class="h-16 flex items-center px-6 border-b border-neutral-gray-mid justify-between">
+            <span class="font-label-sm text-label-sm font-bold text-on-surface uppercase tracking-wider">Pipeline
+                Context</span>
+            <span
+                class="material-symbols-outlined text-secondary cursor-pointer hover:bg-neutral-gray-mid rounded p-1">keyboard_double_arrow_right</span>
+        </div>
+        <div class="p-6 space-y-6 overflow-y-auto">
+            <!-- Active Trace Section -->
+            <div class="space-y-3">
+                <h3 class="text-[10px] font-bold text-secondary uppercase tracking-widest">Active Trace</h3>
+                <div class="bg-white border border-neutral-gray-mid p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-on-surface">Target: WS-12-XF</span>
+                        <span
+                            class="px-2 py-0.5 bg-error-container text-on-error-container text-[9px] font-bold rounded uppercase">Flagged</span>
+                    </div>
+                    <p class="text-xs text-secondary mb-3">Origin: Singapore Data Center (Zone A-4)</p>
+                    <div class="flex items-center gap-2">
+                        <div class="flex -space-x-2">
+                            <div
+                                class="w-6 h-6 rounded-full border border-white bg-neutral-gray-mid flex items-center justify-center text-[8px] font-bold">
+                                JD</div>
+                            <div
+                                class="w-6 h-6 rounded-full border border-white bg-surface-charcoal flex items-center justify-center text-[8px] font-bold text-white">
+                                AI</div>
+                        </div>
+                        <span class="text-[10px] text-secondary">2 collaborators assigned</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Workflow Graph Visual (Simplified) -->
+            <div class="space-y-3">
+                <h3 class="text-[10px] font-bold text-secondary uppercase tracking-widest">Workflow Step</h3>
+                <div class="space-y-4">
+                    <div class="flex gap-3">
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="w-5 h-5 rounded-full border-2 border-brand-yellow flex items-center justify-center">
+                                <div class="w-2 h-2 rounded-full bg-brand-yellow"></div>
+                            </div>
+                            <div class="w-0.5 h-12 bg-neutral-gray-mid"></div>
+                        </div>
+                        <div class="pt-0.5">
+                            <p class="text-xs font-bold text-on-surface">Request Receipt</p>
+                            <p class="text-[10px] text-secondary">Captured at 14:22:04 UTC</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="w-5 h-5 rounded-full border-2 border-brand-yellow flex items-center justify-center animate-pulse">
+                                <div class="w-2 h-2 rounded-full bg-brand-yellow"></div>
+                            </div>
+                            <div class="w-0.5 h-12 bg-neutral-gray-mid border-dashed"></div>
+                        </div>
+                        <div class="pt-0.5">
+                            <p class="text-xs font-bold text-on-surface">Fingerprinting Logic</p>
+                            <p class="text-[10px] text-primary">Status: Processing 74%...</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 opacity-40">
+                        <div class="flex flex-col items-center">
+                            <div class="w-5 h-5 rounded-full border-2 border-neutral-gray-mid"></div>
+                        </div>
+                        <div class="pt-0.5">
+                            <p class="text-xs font-bold text-secondary">Variance Reporting</p>
+                            <p class="text-[10px] text-secondary">Status: Pending</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Data Health Metrics -->
+            <div class="space-y-3">
+                <h3 class="text-[10px] font-bold text-secondary uppercase tracking-widest">Asset Integrity</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="p-3 border border-neutral-gray-mid rounded-lg bg-white">
+                        <p class="text-[9px] font-bold text-secondary uppercase">Confidence</p>
+                        <p class="text-lg font-bold text-on-surface">98.2<span class="text-xs">%</span></p>
+                    </div>
+                    <div class="p-3 border border-neutral-gray-mid rounded-lg bg-white">
+                        <p class="text-[9px] font-bold text-secondary uppercase">Latency</p>
+                        <p class="text-lg font-bold text-on-surface">14<span class="text-xs">ms</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-auto p-4 border-t border-neutral-gray-mid">
+            <button
+                class="w-full py-2 border border-surface-charcoal text-surface-charcoal text-[11px] font-bold uppercase rounded hover:bg-surface-charcoal hover:text-white transition-all">
+                Export Context Log
+            </button>
+        </div>
+    </aside>
+    <!-- Mobile Bottom Navigation (Shared Component Constraint) -->
+    <nav
+        class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-neutral-gray-mid flex items-center justify-around z-50">
+        <span class="material-symbols-outlined text-secondary">home</span>
+        <span class="material-symbols-outlined text-primary font-bold">chat_bubble</span>
+        <span class="material-symbols-outlined text-secondary">folder_shared</span>
+        <span class="material-symbols-outlined text-secondary">analytics</span>
+        <span class="material-symbols-outlined text-secondary">inventory_2</span>
+    </nav>
+    <script>
+        // Micro-interactions for the chat UI
+        const textarea = document.querySelector('textarea');
+        textarea.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Simulating progress update
+        let progress = 74;
+        const progressFill = document.querySelector('.progress-shimmer');
+        const progressText = document.querySelector('.font-mono');
+
+        setInterval(() => {
+            if (progress < 99) {
+                progress += Math.random() * 0.5;
+                if (progressFill) progressFill.style.width = progress + '%';
+                if (progressText) progressText.innerText = Math.floor(progress) + '% Processed';
+            }
+        }, 3000);
+    </script>
+</body>
+
+</html>

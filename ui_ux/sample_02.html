@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>CyberMorph | Chat Gate</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .gate-active {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 230, 0, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 230, 0, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 230, 0, 0);
+            }
+        }
+
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scroll-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface font-body-md overflow-hidden h-screen flex flex-col">
+    <!-- TopNavBar -->
+    <header
+        class="bg-surface dark:bg-surface-charcoal border-b border-neutral-gray-mid dark:border-outline docked full-width top-0 z-50">
+        <div
+            class="flex justify-between items-center w-full px-margin-mobile md:px-gutter max-w-container-max mx-auto h-16">
+            <div class="flex items-center gap-8">
+                <span
+                    class="text-headline-md font-headline-md font-bold text-primary dark:text-brand-yellow">CyberMorph</span>
+                <nav class="hidden md:flex gap-6 items-center h-full">
+                    <a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-brand-yellow transition-colors font-label-sm text-label-sm cursor-pointer"
+                        href="#">Dashboard</a>
+                    <a class="text-primary dark:text-brand-yellow border-b-2 border-primary dark:border-brand-yellow pb-1 font-label-sm text-label-sm cursor-pointer"
+                        href="#">Workspaces</a>
+                    <a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-brand-yellow transition-colors font-label-sm text-label-sm cursor-pointer"
+                        href="#">Compliance</a>
+                    <a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-brand-yellow transition-colors font-label-sm text-label-sm cursor-pointer"
+                        href="#">Admin</a>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:block relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">search</span>
+                    <input
+                        class="pl-10 pr-4 py-1.5 bg-neutral-gray-light border border-neutral-gray-mid rounded-lg text-label-sm focus:outline-none focus:border-brand-yellow w-64"
+                        placeholder="Search workspace..." type="text" />
+                </div>
+                <button
+                    class="material-symbols-outlined text-secondary hover:text-primary transition-colors">notifications</button>
+                <button
+                    class="material-symbols-outlined text-secondary hover:text-primary transition-colors">settings</button>
+                <div class="w-8 h-8 rounded-full overflow-hidden border border-neutral-gray-mid">
+                    <img alt="User profile photo" class="w-full h-full object-cover"
+                        data-alt="A professional studio portrait of a corporate executive in a light-filled office environment. The image uses a clean, high-key lighting setup with a soft bokeh background that hints at a modern workspace. The subject is wearing business formal attire, reflecting the high-trust, enterprise nature of the platform. Colors are muted and sophisticated, primarily whites, grays, and deep blues."
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhsMHLdF8a_HgNe1Vw4sTWSP8AJtEZbZpUB4Rg-i3rNW16OlGlc-34P_P21D9VovQgWT-jTtpIUaXMBIhBnlwSe-AOt2jvqcUJ3CJ42WqtoSUqIV84THBhoMdltIkrg83W7N6-0nx2-1OuTTzmcQatYLJfF-XsBdMtb6INWZEDUEd2xejKcGiRfE3X0Ql-H7NpWmrHCQ2u4oysZMm3oGAbN0oqYNRkezAjQKDGAnm5ffWqYkrYm7RkD0uz_kWwzpovctZ_s7kw6Wk" />
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="flex-1 flex overflow-hidden">
+        <!-- SideNavBar (Left Rail) -->
+        <aside
+            class="hidden md:flex flex-col h-full py-6 px-4 bg-neutral-gray-light dark:bg-surface-charcoal border-r border-neutral-gray-mid dark:border-outline w-64 shrink-0 overflow-y-auto">
+            <div class="flex items-center gap-3 mb-8 px-2">
+                <div class="w-10 h-10 bg-surface-charcoal rounded flex items-center justify-center text-brand-yellow">
+                    <span class="material-symbols-outlined">hub</span>
+                </div>
+                <div>
+                    <h2 class="font-bold text-on-surface dark:text-on-surface-variant leading-none">Global Tenant</h2>
+                    <p class="text-[10px] text-secondary uppercase tracking-widest mt-1">Enterprise Instance</p>
+                </div>
+            </div>
+            <button
+                class="w-full mb-6 py-3 px-4 bg-brand-yellow text-on-primary-fixed-variant font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined">add</span>
+                <span>New Chat</span>
+            </button>
+            <div class="flex-1 space-y-1">
+                <a
+                    class="cursor-pointer flex items-center gap-3 p-3 transition-all text-secondary dark:text-secondary-fixed-dim hover:bg-neutral-gray-mid dark:hover:bg-outline-variant font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined">home</span> Home
+                </a>
+                <a
+                    class="cursor-pointer flex items-center gap-3 p-3 transition-all bg-brand-yellow text-on-primary-fixed-variant font-bold rounded-lg font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined">chat_bubble</span> Direct Messages
+                </a>
+                <a
+                    class="cursor-pointer flex items-center gap-3 p-3 transition-all text-secondary dark:text-secondary-fixed-dim hover:bg-neutral-gray-mid dark:hover:bg-outline-variant font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined">folder_shared</span> Projects
+                </a>
+                <a
+                    class="cursor-pointer flex items-center gap-3 p-3 transition-all text-secondary dark:text-secondary-fixed-dim hover:bg-neutral-gray-mid dark:hover:bg-outline-variant font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined">analytics</span> Analytics
+                </a>
+                <a
+                    class="cursor-pointer flex items-center gap-3 p-3 transition-all text-secondary dark:text-secondary-fixed-dim hover:bg-neutral-gray-mid dark:hover:bg-outline-variant font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined">inventory_2</span> Archives
+                </a>
+            </div>
+            <div class="mt-auto border-t border-neutral-gray-mid pt-4 space-y-1">
+                <a
+                    class="cursor-pointer flex items-center gap-3 p-3 transition-all text-secondary hover:bg-neutral-gray-mid font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined">help</span> Help
+                </a>
+                <a
+                    class="cursor-pointer flex items-center gap-3 p-3 transition-all text-secondary hover:bg-neutral-gray-mid font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined">logout</span> Sign Out
+                </a>
+            </div>
+        </aside>
+        <!-- Main Workspace (Center Chat) -->
+        <section class="flex-1 flex flex-col bg-white overflow-hidden relative">
+            <!-- Chat Header -->
+            <div class="h-14 border-b border-neutral-gray-mid flex items-center justify-between px-6 bg-white shrink-0">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">security</span>
+                    <h3 class="font-headline-md text-on-surface">Compliance Audit #482</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span
+                        class="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold uppercase">Human-in-the-Loop</span>
+                </div>
+            </div>
+            <!-- Chat Messages Area -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-8 scroll-hide">
+                <!-- User Message -->
+                <div class="flex gap-4 max-w-3xl">
+                    <div class="w-8 h-8 rounded bg-secondary flex items-center justify-center text-white shrink-0">
+                        <span class="material-symbols-outlined text-sm">person</span>
+                    </div>
+                    <div>
+                        <div class="bg-neutral-gray-light p-4 rounded-lg border border-neutral-gray-mid">
+                            <p class="text-body-md text-on-surface">Generate a strategy for the quarterly compliance
+                                review focusing on the EMEA region data privacy protocols.</p>
+                        </div>
+                        <span class="text-[10px] text-secondary mt-1 block">10:42 AM</span>
+                    </div>
+                </div>
+                <!-- Agent Message with GATE -->
+                <div class="flex gap-4 max-w-3xl">
+                    <div
+                        class="w-8 h-8 rounded bg-surface-charcoal flex items-center justify-center text-brand-yellow shrink-0">
+                        <span class="material-symbols-outlined text-sm">smart_toy</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-white p-6 rounded-lg border-2 border-brand-yellow shadow-sm gate-active">
+                            <div class="flex items-center gap-2 mb-4 text-primary">
+                                <span class="material-symbols-outlined">lock_open</span>
+                                <span class="font-label-sm uppercase tracking-wider">Proposal Gate Required</span>
+                            </div>
+                            <h4 class="font-headline-md text-on-surface mb-2">Quarterly EMEA Privacy Strategy</h4>
+                            <p class="text-body-md text-secondary mb-6">I have synthesized the compliance requirements
+                                for the EMEA region. Due to recent GDPR amendments in section 4.2, I recommend the
+                                following execution plan. This requires your authorization before I initiate the data
+                                harvesting protocol.</p>
+                            <!-- Expandable Card -->
+                            <details class="group border border-neutral-gray-mid rounded overflow-hidden mb-6">
+                                <summary
+                                    class="flex items-center justify-between p-4 cursor-pointer bg-neutral-gray-light hover:bg-neutral-gray-mid transition-colors list-none">
+                                    <span class="font-label-sm text-on-surface">View Detailed Implementation
+                                        Steps</span>
+                                    <span
+                                        class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+                                </summary>
+                                <div class="p-4 bg-white space-y-4 text-body-md border-t border-neutral-gray-mid">
+                                    <div class="flex gap-3">
+                                        <span class="font-bold text-primary">01.</span>
+                                        <p>Mapping all PII across 14 distributed EMEA nodes using CyberMorph Scan-v2.
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-3">
+                                        <span class="font-bold text-primary">02.</span>
+                                        <p>Automated validation against local jurisdictional exceptions (Germany,
+                                            France, Spain).</p>
+                                    </div>
+                                    <div class="flex gap-3">
+                                        <span class="font-bold text-primary">03.</span>
+                                        <p>Generation of anonymized risk report for stakeholder sign-off.</p>
+                                    </div>
+                                    <div
+                                        class="p-3 bg-error-container/20 border border-error/20 rounded flex gap-3 items-start">
+                                        <span class="material-symbols-outlined text-error">warning</span>
+                                        <p class="text-[13px] text-error">Warning: Step 01 initiates a high-load system
+                                            scan. This may affect workspace latency for 10 minutes.</p>
+                                    </div>
+                                </div>
+                            </details>
+                            <!-- Gate Buttons -->
+                            <div class="flex flex-wrap gap-3">
+                                <button
+                                    class="flex-1 min-w-[120px] bg-brand-yellow text-on-primary-fixed-variant font-bold h-11 rounded flex items-center justify-center gap-2 hover:opacity-90 transition-all cursor-pointer">
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                    <span>Approve</span>
+                                </button>
+                                <button
+                                    class="flex-1 min-w-[120px] bg-white border border-surface-charcoal text-surface-charcoal font-bold h-11 rounded flex items-center justify-center gap-2 hover:bg-neutral-gray-light transition-all cursor-pointer">
+                                    <span class="material-symbols-outlined">edit</span>
+                                    <span>Modify</span>
+                                </button>
+                                <button
+                                    class="flex-1 min-w-[120px] bg-surface-charcoal text-white font-bold h-11 rounded flex items-center justify-center gap-2 hover:bg-black transition-all cursor-pointer">
+                                    <span class="material-symbols-outlined">cancel</span>
+                                    <span>Cancel</span>
+                                </button>
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-secondary mt-2 block">Agent CyberMorph-01 • Waiting for user
+                            input...</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Input Bar -->
+            <div class="p-6 bg-white border-t border-neutral-gray-mid shrink-0">
+                <div
+                    class="max-w-4xl mx-auto flex items-end gap-3 bg-neutral-gray-light border border-neutral-gray-mid p-3 rounded-xl focus-within:border-brand-yellow transition-colors">
+                    <button
+                        class="material-symbols-outlined text-secondary p-2 hover:bg-neutral-gray-mid rounded">attach_file</button>
+                    <textarea
+                        class="flex-1 bg-transparent border-none focus:ring-0 resize-none py-2 text-body-md scroll-hide h-12"
+                        placeholder="Provide instructions or feedback on the plan..." rows="1"></textarea>
+                    <button
+                        class="bg-brand-yellow w-10 h-10 rounded-lg flex items-center justify-center text-on-primary-fixed-variant shadow-sm hover:opacity-90">
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- Right Status Panel -->
+        <aside
+            class="hidden lg:flex flex-col w-80 shrink-0 border-l border-neutral-gray-mid bg-neutral-gray-light h-full">
+            <div class="p-6 border-b border-neutral-gray-mid bg-white">
+                <h3 class="font-label-sm text-secondary uppercase tracking-widest mb-4">Workspace Status</h3>
+                <div
+                    class="flex items-center gap-4 p-4 rounded-lg bg-surface-container border-2 border-brand-yellow mb-2">
+                    <div class="relative">
+                        <span class="material-symbols-outlined text-primary text-3xl animate-spin"
+                            style="animation-duration: 3s;">hourglass_empty</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-on-surface text-label-sm">Waiting for gate</p>
+                        <p class="text-[12px] text-secondary">Awaiting manual approval</p>
+                    </div>
+                </div>
+                <div class="mt-4 space-y-3">
+                    <div class="flex justify-between text-label-sm">
+                        <span class="text-secondary">Elapsed time:</span>
+                        <span class="text-on-surface font-mono">00:04:12</span>
+                    </div>
+                    <div class="flex justify-between text-label-sm">
+                        <span class="text-secondary">Priority:</span>
+                        <span class="text-on-surface flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-error"></span> High
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 flex-1 overflow-y-auto">
+                <h3 class="font-label-sm text-secondary uppercase tracking-widest mb-4">Contextual Info</h3>
+                <div class="space-y-4">
+                    <!-- Action Card (Design System) -->
+                    <div class="bg-white p-4 border border-neutral-gray-mid rounded-sm">
+                        <div class="flex items-center gap-2 mb-2 text-primary">
+                            <span class="material-symbols-outlined text-sm">gavel</span>
+                            <span class="font-bold text-[12px]">Legal Reference</span>
+                        </div>
+                        <p class="text-[13px] text-on-surface leading-relaxed">
+                            Section 4.2 of the GDPR framework restricts automated processing of personal sensitive data
+                            without explicit human oversight.
+                        </p>
+                    </div>
+                    <div class="bg-white p-4 border border-neutral-gray-mid rounded-sm">
+                        <div class="flex items-center gap-2 mb-2 text-primary">
+                            <span class="material-symbols-outlined text-sm">cloud_sync</span>
+                            <span class="font-bold text-[12px]">System Load</span>
+                        </div>
+                        <div class="w-full bg-neutral-gray-light h-1.5 rounded-full mt-2">
+                            <div class="bg-brand-yellow h-full w-2/3 rounded-full"></div>
+                        </div>
+                        <p class="text-[11px] text-secondary mt-2">67% capacity reached across regional nodes.</p>
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <h3 class="font-label-sm text-secondary uppercase tracking-widest mb-4">Related Assets</h3>
+                    <div class="space-y-2">
+                        <div
+                            class="flex items-center gap-3 p-2 hover:bg-neutral-gray-mid rounded cursor-pointer transition-colors">
+                            <span class="material-symbols-outlined text-primary">description</span>
+                            <span class="text-[13px] text-on-surface truncate">EMEA_Privacy_Draft_Q4.pdf</span>
+                        </div>
+                        <div
+                            class="flex items-center gap-3 p-2 hover:bg-neutral-gray-mid rounded cursor-pointer transition-colors">
+                            <span class="material-symbols-outlined text-primary">analytics</span>
+                            <span class="text-[13px] text-on-surface truncate">Data_Protection_Stats.xlsx</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-surface-charcoal dark:bg-black docked full-width bottom-0 z-50 shrink-0">
+        <div
+            class="w-full py-4 px-margin-mobile md:px-gutter flex flex-col md:flex-row justify-between items-center text-center gap-4 max-w-container-max mx-auto">
+            <span class="text-brand-yellow font-bold font-label-sm text-label-sm">CyberMorph</span>
+            <p class="text-neutral-gray-mid font-label-sm text-label-sm">© 2024 CyberMorph Platform. Built for EY Global
+                Delivery.</p>
+            <div class="flex gap-6">
+                <a class="text-neutral-gray-mid font-label-sm text-label-sm hover:text-white transition-colors"
+                    href="#">Privacy Policy</a>
+                <a class="text-neutral-gray-mid font-label-sm text-label-sm hover:text-white transition-colors"
+                    href="#">Security Disclosure</a>
+                <a class="text-neutral-gray-mid font-label-sm text-label-sm hover:text-white transition-colors"
+                    href="#">Support</a>
+            </div>
+        </div>
+    </footer>
+    <script>
+        // Micro-interaction for the gate buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'scale(0.98)';
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = 'scale(1)';
+            });
+        });
+
+        // Expandable card auto-scroll
+        const details = document.querySelector('details');
+        details.addEventListener('toggle', () => {
+            if (details.open) {
+                details.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    </script>
+</body>
+
+</html>

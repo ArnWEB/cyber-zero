@@ -1,0 +1,989 @@
+# CyberMorph — UI/UX Design Document
+
+**Version:** 1.0
+**Date:** 2025-01-XX
+**Status:** Design Specification
+**For:** UI/UX Design Team
+
+---
+
+## Table of Contents
+
+1. [Product Overview](#1-product-overview)
+2. [Design Principles](#2-design-principles)
+3. [Information Architecture](#3-information-architecture)
+4. [Screen Inventory & Specifications](#4-screen-inventory--specifications)
+5. [Component Library](#5-component-library)
+6. [Interaction Patterns](#6-interaction-patterns)
+7. [Edge Cases & Error States](#7-edge-cases--error-states)
+8. [Responsive Behavior](#8-responsive-behavior)
+9. [Accessibility](#9-accessibility)
+10. [Design Tokens](#10-design-tokens)
+
+---
+
+## 1. Product Overview
+
+### What is CyberMorph?
+
+CyberMorph is an AI-powered cybersecurity platform where users interact with an intelligent agent via natural language chat. The agent orchestrates NVIDIA Morpheus pipelines to analyze Microsoft 365 / SharePoint audit logs, perform EDA, engineer features, and train threat detection models.
+
+### Core User Flow
+
+```
+User types intent → Agent proposes plan → Human approves (Gate 1)
+→ Data pull → Interactive EDA → Human reviews (Gate 2)
+→ Feature engineering → Model training → Human signs off (Gate 3)
+→ Deployment → Monitoring → Retrain on drift
+```
+
+### Key UX Decisions (Locked)
+
+| Decision | Choice |
+|---|---|
+| Primary interface | Chat-first (full-width chat, collapsible sidebar) |
+| Rich content rendering | Hybrid — simple inline, complex expandable |
+| Gate mechanism | Inline action buttons in agent messages |
+| EDA interactivity | Dynamic suggestion chips + free-form chat |
+| Dashboard | Single model view, separate page |
+| Onboarding | Sample data mode first |
+| Errors | Inline error cards in chat |
+| Notifications | Browser notification + in-app badge |
+| Chat history | Multiple independent conversations |
+
+---
+
+## 2. Design Principles
+
+### 2.1 Chat is the Brain, Dashboard is the Eyes
+
+All actions happen through chat. The dashboard is for passive monitoring. Users should never need to leave the chat to accomplish their primary task.
+
+### 2.2 Every Gate Has Three Options
+
+At every human-in-the-loop checkpoint, the user always sees three choices:
+- **Approve** — proceed as-is
+- **Modify** — adjust parameters before proceeding
+- **Cancel** — stop the pipeline
+
+Never just Approve/Cancel. The user must always feel in control.
+
+### 2.3 Progress is Always Visible
+
+No black boxes. The user always knows:
+- What the agent is currently doing
+- How far along it is (percentage or steps)
+- What happens next
+
+### 2.4 Failures are Recoverable
+
+Every error message includes a recovery action:
+- Retry (same operation)
+- Resume (from checkpoint)
+- Rollback (to previous stable state)
+- Cancel (clean stop)
+
+### 2.5 Context Persists
+
+The right sidebar always shows current pipeline state. Chat history shows full conversation. User never loses context.
+
+---
+
+## 3. Information Architecture
+
+### 3.1 Navigation Structure
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    App Shell                         │
+│                                                     │
+│ ┌──────┐ ┌──────────────────────────┐ ┌──────────┐ │
+│ │ Left │ │      Main Content        │ │  Right   │ │
+│ │ Side │ │                          │ │  Panel   │ │
+│ │ bar  │ │  Chat View OR            │ │(collaps) │ │
+│ │      │ │  Dashboard View          │ │          │ │
+│ │      │ │                          │ │          │ │
+│ └──────┘ └──────────────────────────┘ └──────────┘ │
+└─────────────────────────────────────────────────────┘
+```
+
+### 3.2 Left Sidebar (Fixed, 280px)
+
+```
+┌─ CyberMorph ─────────────────────┐
+│ [New Chat +]                     │
+│                                  │
+│ ── Active ──                     │
+│ > DFP on SharePoint (Running)  ⚡│
+│ > Exchange Anomaly (Gate 2)    ⚠️│
+│                                  │
+│ ── Completed ──                  │
+│   DFP on SharePoint (Jan)      ✅│
+│   Anomaly Detection (Dec)      ✅│
+│                                  │
+│ ── Drafts ──                     │
+│   Privilege escalation...        │
+│                                  │
+│ ┌──────────────────────────────┐ │
+│ │ ⚙️ Settings                  │ │
+│ │ 📊 Dashboard                 │ │
+│ │ 🔗 Connect M365             │ │
+│ └──────────────────────────────┘ │
+└──────────────────────────────────┘
+```
+
+**States for each conversation item:**
+- Running: ⚡ icon, subtle pulse animation
+- Needs attention (gate): ⚠️ icon, amber highlight
+- Completed: ✅ icon, muted
+- Failed: ❌ icon, red accent
+- Draft: 💬 icon, no indicator
+
+**Badge system:**
+- Red badge with number = conversations needing attention
+- Badge appears on chat icon in sidebar header
+
+### 3.3 Right Panel (Collapsible, 320px default)
+
+```
+┌─ Context ──────────────────────────────┐
+│ Active Pipeline: DFP v1.2               │
+│ Status: Deployed (Canary 5%)            │
+│ Model: Morpheus DFP, F1=0.94           │
+│                                         │
+│ ── Data Source ──                        │
+│ SharePoint logs (Jan 1-30)              │
+│ Records: 1,203,847                      │
+│                                         │
+│ ── Recent Activity ──                   │
+│ 10:32 - Training started                │
+│ 10:15 - EDA completed                   │
+│ 10:02 - Data pull started               │
+│ 09:58 - Plan approved                   │
+│ 09:55 - "Run DFP on SharePoint logs"    │
+│                                         │
+│ [Collapse →]                            │
+└─────────────────────────────────────────┘
+```
+
+**Collapse behavior:**
+- Default: expanded
+- User can collapse to icon-only (48px)
+- Collapsed state shows status dot (green/red/amber) per active pipeline
+
+---
+
+## 4. Screen Inventory & Specifications
+
+### Screen List
+
+| # | Screen | Route | Description |
+|---|---|---|---|
+| 1 | Login | `/login` | SSO / credential entry |
+| 2 | Tenant Selection | `/tenants` | Choose M365 tenant (if multiple) |
+| 3 | Chat (Home) | `/` | Primary interface |
+| 4 | Dashboard | `/dashboard` | Model monitoring |
+| 5 | Settings | `/settings` | M365 connection, preferences |
+
+---
+
+### Screen 1: Login
+
+**Layout:** Centered card on dark background.
+
+```
+┌─────────────────────────────────────────┐
+│                                         │
+│          ┌───────────────────┐          │
+│          │                   │          │
+│          │   CyberMorph      │          │
+│          │   Logo            │          │
+│          │                   │          │
+│          │ [Email]           │          │
+│          │ [Password]        │          │
+│          │                   │          │
+│          │ [Sign In]         │          │
+│          │                   │          │
+│          │ ─── OR ───        │          │
+│          │                   │          │
+│          │ [Sign in with     │          │
+│          │  Microsoft SSO]   │          │
+│          │                   │          │
+│          └───────────────────┘          │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+**Edge Cases:**
+| Case | UI Response |
+|---|---|
+| Invalid credentials | Inline error below password: "Invalid email or password" |
+| SSO redirect fails | "Microsoft login failed. [Try again] [Use email instead]" |
+| Account locked | "Account locked after 5 attempts. Contact admin." |
+| Network error | "Can't reach server. Check your connection. [Retry]" |
+
+---
+
+### Screen 2: Tenant Selection
+
+**Layout:** Cards for each tenant.
+
+```
+┌─────────────────────────────────────────┐
+│                                         │
+│  Select your Microsoft 365 tenant       │
+│                                         │
+│  ┌─────────────┐  ┌─────────────┐       │
+│  │ 🏢 Acme Corp │  │ 🏢 Contoso  │       │
+│  │ 3,421 users  │  │ 892 users   │       │
+│  │ [Select]     │  │ [Select]    │       │
+│  └─────────────┘  └─────────────┘       │
+│                                         │
+│  [+ Connect new tenant]                 │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+**Edge Cases:**
+| Case | UI Response |
+|---|---|
+| No tenants connected | "No tenants connected. [Connect Microsoft 365 tenant]" |
+| Tenant connection expired | Card shows "⚠️ Token expired" badge, [Reconnect] button |
+| Loading tenants | Skeleton cards with shimmer animation |
+
+---
+
+### Screen 3: Chat (Home) — PRIMARY SCREEN
+
+This is the most complex screen. Breaking it into sub-states.
+
+#### 3A: Empty State (First-Time User — Sample Data Mode)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐ ┌──────────┐     │
+│ │ Left     │ │                                  │ │ Right    │     │
+│ │ Sidebar  │ │   Welcome to CyberMorph          │ │ Panel    │     │
+│ │          │ │                                  │ │(collapsed│     │
+│ │ [New     │ │   Try it out with sample data:   │ │          │     │
+│ │  Chat +] │ │                                  │ │          │     │
+│ │          │ │   ┌────────────────────────────┐ │ │          │     │
+│ │ ── Active│ │   │ "Run DFP on sample logs"   │ │ │          │     │
+│ │ (none)   │ │   └────────────────────────────┘ │ │          │     │
+│ │          │ │   ┌────────────────────────────┐ │ │          │     │
+│ │ ── Done  │ │   │ "Show me anomalies"         │ │ │          │     │
+│ │ (none)   │ │   └────────────────────────────┘ │ │          │     │
+│ │          │ │   ┌────────────────────────────┐ │ │          │     │
+│ │ ── Drafts│ │   │ "What data is available?"   │ │ │          │     │
+│ │ (none)   │ │   └────────────────────────────┘ │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │   Or type anything...            │ │          │     │
+│ │          │ │   ┌──────────────────────────┐   │ │          │     │
+│ │          │ │   │ Type a message...    [→] │   │ │          │     │
+│ │          │ │   └──────────────────────────┘   │ │          │     │
+│ └──────────┘ └──────────────────────────────────┘ └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Components:**
+- Suggestion chips: Rounded pills, subtle border, hover fills with accent color
+- Chat input: Full-width text area, auto-grows to 4 lines max, send button disabled when empty
+- Empty state illustration: Subtle cybersecurity-themed graphic (optional)
+
+#### 3B: Empty State (Returning User — Has History)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐ ┌──────────┐     │
+│ │ Left     │ │                                  │ │ Right    │     │
+│ │ Sidebar  │ │   Last conversation is shown     │ │ Panel    │     │
+│ │          │ │   or empty with suggestion chips  │ │          │     │
+│ │ [New     │ │                                  │ │          │     │
+│ │  Chat +] │ │                                  │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ └──────────┘ └──────────────────────────────────┘ └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 3C: Active Conversation — Agent Working
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐ ┌──────────┐     │
+│ │ Left     │ │ 🤖 Understanding your request...  │ │ Right    │     │
+│ │ Sidebar  │ │                                  │ │ Panel    │     │
+│ │          │ │ ✅ Intent: Digital Fingerprinting │ │          │     │
+│ │ [New     │ │ ✅ Source: SharePoint audit logs  │ │ Pipeline:│     │
+│ │  Chat +] │ │ ⏳ Time range: Detecting...       │ │ Pulling  │     │
+│ │          │ │                                  │ │ data...  │     │
+│ │ ── Active│ │ ████████████████░░░░░░ 78%       │ │ 78%      │     │
+│ │ > DFP ⚡ │ │ Pulling: 1.2M records             │ │          │     │
+│ │          │ │ ETA: ~45 seconds                 │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ [Pause] [Cancel]                 │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ┌──────────────────────────┐     │ │          │     │
+│ │          │ │ │ Type a message...    [→] │     │ │          │     │
+│ │          │ │ └──────────────────────────┘     │ │          │     │
+│ └──────────┘ └──────────────────────────────────┘ └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Progress bar component:**
+- Height: 4px
+- Color: Gradient from accent to success
+- Animation: Smooth fill, not stepped
+- Shows percentage text only if > 5%
+
+**Streaming text behavior:**
+- Agent message types out character by character (like real-time LLM output)
+- Cursor blinks at end of current line
+- New lines appear as they're generated
+
+#### 3D: Gate Prompt (Inline in Chat)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐ ┌──────────┐     │
+│ │ Left     │ │ 🤖 Plan ready for your review:   │ │ Right    │     │
+│ │ Sidebar  │ │                                  │ │ Panel    │     │
+│ │          │ │ ┌─ Plan Preview ───────────────┐ │ │          │     │
+│ │          │ │ │ 1. Pull SharePoint logs      │ │ │ Pipeline:│     │
+│ │          │ │ │ 2. Run EDA                   │ │ │ Waiting  │     │
+│ │          │ │ │ 3. Feature engineering       │ │ │ for gate │     │
+│ │          │ │ │ 4. Train DFP model           │ │ │          │     │
+│ │          │ │ │ 5. Explainability report     │ │ │          │     │
+│ │          │ │ └──────────────────────────────┘ │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ⚠️ GATE 1: Confirm before       │ │          │     │
+│ │          │ │    proceeding                    │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ┌──────────┐ ┌──────┐ ┌──────┐  │ │          │     │
+│ │          │ │ │✅ Approve│ │✏️ Mod│ │❌ Can│  │ │          │     │
+│ │          │ │ └──────────┘ └──────┘ └──────┘  │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ └──────────┘ └──────────────────────────────────┘ └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Gate button states:**
+- Default: Filled background, subtle shadow
+- Hover: Slightly darker, lift effect
+- Active/clicked: Brief press animation, then disabled
+- Disabled (after selection): Grayed out, "Approved ✓" or "Modifying..."
+
+**Gate 1 buttons:** `✅ Approve` `✏️ Modify` `❌ Cancel`
+**Gate 2 buttons:** `✅ Approve & Train` `🔍 Investigate` `🔄 Re-run EDA` `❌ Cancel`
+**Gate 3 buttons:** `✅ Deploy` `🔍 Review SHAP` `🔄 Retrain` `❌ Reject`
+
+#### 3E: Interactive EDA Phase
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐ ┌──────────┐     │
+│ │ Left     │ │ 🤖 EDA complete. Here's what      │ │ Right    │     │
+│ │ Sidebar  │ │    I found:                       │ │ Panel    │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ 📊 Data Overview          [View] │ │ EDA      │     │
+│ │          │ │ Records: 1.2M | Users: 3,421     │ │ Status:  │     │
+│ │          │ │                                  │ │ Complete │     │
+│ │          │ │ ⚠️ 47 users with 3x activity     │ │          │     │
+│ │          │ │ ⚠️ 12 unusual geolocations       │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ Correlation: downloads ↔ off-    │ │          │     │
+│ │          │ │ hours (r=0.72)           [View]  │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ── Suggested Questions ──        │ │          │     │
+│ │          │ │ ┌──────────────────────────────┐ │ │          │     │
+│ │          │ │ │ Show correlation matrix       │ │ │          │     │
+│ │          │ │ └──────────────────────────────┘ │ │          │     │
+│ │          │ │ ┌──────────────────────────────┐ │ │          │     │
+│ │          │ │ │ Drill into top anomaly        │ │ │          │     │
+│ │          │ │ └──────────────────────────────┘ │ │          │     │
+│ │          │ │ ┌──────────────────────────────┐ │ │          │     │
+│ │          │ │ │ Compare user segments         │ │ │          │     │
+│ │          │ │ └──────────────────────────────┘ │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ Or ask anything...               │ │          │     │
+│ │          │ │ ┌──────────────────────────┐     │ │          │     │
+│ │          │ │ │ Type a message...    [→] │     │ │          │     │
+│ │          │ │ └──────────────────────────┘     │ │          │     │
+│ └──────────┘ └──────────────────────────────────┘ └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Suggestion chip rules:**
+- Maximum 4 chips at a time
+- Chips are dynamically generated based on what the agent found
+- If no strong signal found, chips are generic: "Show distributions" / "Check null rates"
+- If strong correlation found, chip references it: "Explore [X] ↔ [Y] correlation"
+- Chips disappear after 60 seconds or once user asks a question
+- Chips can be clicked multiple times (re-run same analysis)
+
+**Expandable detail (for "View" links):**
+- Clicking [View] on Data Overview opens a modal overlay
+- Modal has close button (X) and escape key to dismiss
+- Modal shows full table/chart, not just summary
+- Modal scrolls independently
+
+```
+┌─ Data Overview ──────────────────────────── [X] ─┐
+│                                                   │
+│ Records: 1,203,847                               │
+│ Fields: 14                                        │
+│ Date range: Jan 1 - Jan 30                       │
+│ Null rate: 2.3% (Operation field)                │
+│ Unique users: 3,421                              │
+│ Unique IPs: 892                                  │
+│                                                   │
+│ ┌─ Distribution: Operation ───────────────────┐  │
+│ │ [Bar chart]                                  │  │
+│ │   FileDownloaded: 43%  ████████████████░░░░ │  │
+│ │   FileModified: 28%   ██████████░░░░░░░░░░ │  │
+│ │   UserLoggedIn: 19%   ███████░░░░░░░░░░░░░ │  │
+│ │   PermissionChanged: 7% ███░░░░░░░░░░░░░░░ │  │
+│ │   Other: 3%            █░░░░░░░░░░░░░░░░░░ │  │
+│ └────────────────────────────────────────────┘  │
+│                                                   │
+│ [Export CSV] [Close]                              │
+└───────────────────────────────────────────────────┘
+```
+
+#### 3F: Training Progress
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐ ┌──────────┐     │
+│ │ Left     │ │ 🤖 Training DFP model...          │ │ Right    │     │
+│ │ Sidebar  │ │                                  │ │ Panel    │     │
+│ │          │ │ 🧠 Morpheus DFP v2.8             │ │          │     │
+│ │          │ │ GPU: NVIDIA A100                 │ │ Training:│     │
+│ │          │ │                                  │ │ Epoch 3/10│    │
+│ │          │ │ Epoch 3/10 ████████░░░░░░ 30%    │ │ Loss:0.02│     │
+│ │          │ │ Loss: 0.0234 | FPR: 0.8%         │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ Current best: F1=0.94, FPR=0.3%  │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ [Pause] [View live metrics]       │ │          │     │
+│ │          │ │ [Cancel]                         │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ └──────────┘ └──────────────────────────────────┘ └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 3G: Gate 3 — Model Review (Most Critical)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐ ┌──────────┐     │
+│ │ Left     │ │ 🤖 Training complete! Here's      │ │ Right    │     │
+│ │ Sidebar  │ │    the review:                    │ │ Panel    │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ┌─ Performance ─────────────────┐ │ │ Model:   │     │
+│ │          │ │ │ F1:     0.94 (target >0.85) ✅│ │ v1.2     │     │
+│ │          │ │ │ FPR:    0.3% (target <2%)  ✅ │ │ F1: 0.94 │     │
+│ │          │ │ │ AUC-ROC: 0.97                ✅│ │ Status:  │     │
+│ │          │ │ │ Latency: 12ms (target <50ms)✅│ │ Reviewing│     │
+│ │          │ │ └──────────────────────────────┘ │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ┌─ Top SHAP Signals ────────────┐ │ │          │     │
+│ │          │ │ │ 1. Download volume    (0.34)  │ │ │          │     │
+│ │          │ │ │ 2. Off-hours activity (0.21)  │ │ │          │     │
+│ │          │ │ │ 3. New IP geolocation (0.18)  │ │ │          │     │
+│ │          │ │ │ 4. Permission escalation(0.15)│ │ │          │     │
+│ │          │ │ │ 5. Unusual file types  (0.12) │ │ │          │     │
+│ │          │ │ │ [View full SHAP report]        │ │ │          │     │
+│ │          │ │ └──────────────────────────────┘ │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ┌─ Red Team ────────────────────┐ │ │          │     │
+│ │          │ │ │ Evasion:    Passed (98%)    ✅│ │ │          │     │
+│ │          │ │ │ Poisoning:  Passed (96%)    ✅│ │ │          │     │
+│ │          │ │ │ Adversarial:Passed (99%)    ✅│ │ │          │     │
+│ │          │ │ └──────────────────────────────┘ │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ⚠️ GATE 3: Human sign-off        │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │ ┌────────┐┌────────┐┌────────┐  │ │          │     │
+│ │          │ │ │✅ Deplo││🔍 Review││🔄 Retra│  │ │          │     │
+│ │          │ │ └────────┘└────────┘└────────┘  │ │          │     │
+│ │          │ │ ┌────────┐                      │ │          │     │
+│ │          │ │ │❌ Rejec│                      │ │          │     │
+│ │          │ │ └────────┘                      │ │          │     │
+│ └──────────┘ └──────────────────────────────────┘ └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 3H: Streaming User Message (User is Typing)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐ ┌──────────┐     │
+│ │ Left     │ │ 👤 show me correlation between    │ │ Right    │     │
+│ │ Sidebar  │ │    downloads and off-hours        │ │ Panel    │     │
+│ │          │ │    activity_                      │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ │          │ │                                  │ │          │     │
+│ └──────────┘ └──────────────────────────────────┘ └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Note:** `_` represents blinking cursor. User messages don't stream — they appear fully on send.
+
+---
+
+### Screen 4: Dashboard
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐                   │
+│ │ Left     │ │ 📡 DFP Model v1.2 — Monitoring    │                   │
+│ │ Sidebar  │ │                                  │                   │
+│ │          │ │ Status: Healthy ✅                │                   │
+│ │ [New     │ │ Last scored: 2 min ago            │                   │
+│ │  Chat +] │ │ Records today: 12,847             │                   │
+│ │          │ │ Alerts today: 3                   │                   │
+│ │ ── Active│ │                                  │                   │
+│ │ > DFP ⚡ │ │ ┌─ Drift Monitor ──────────────┐ │                   │
+│ │          │ │ │ Data drift:    Normal ✅      │ │                   │
+│ │ ── Done  │ │ │ Concept drift: Normal ✅      │ │                   │
+│ │   DFP ✅ │ │ │ FPR trend: 0.3% → 0.4%       │ │                   │
+│ │          │ │ └──────────────────────────────┘ │                   │
+│ │          │ │                                  │                   │
+│ │          │ │ ┌─ FPR Trend (7d) ─────────────┐ │                   │
+│ │          │ │ │ [Line chart]                  │ │                   │
+│ │          │ │ │   ─────────────────────       │ │                   │
+│ │          │ │ │   Flat, stable                │ │                   │
+│ │          │ │ └──────────────────────────────┘ │                   │
+│ │          │ │                                  │ │                   │
+│ │          │ │ ┌─ Recent Alerts ───────────────┐ │                   │
+│ │          │ │ │ 🔴 High - jsmith, 340 dl/hr   │ │                   │
+│ │          │ │ │ 🟡 Med  - 103.x.x.x, new geo │ │                   │
+│ │          │ │ │ 🟢 Low  - amiller, off-hours  │ │                   │
+│ │          │ │ │ [View all alerts]              │ │                   │
+│ │          │ │ └──────────────────────────────┘ │                   │
+│ │          │ │                                  │ │                   │
+│ │          │ │ [Trigger Retrain] [Back to Chat] │                   │
+│ └──────────┘ └──────────────────────────────────┘                   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Auto-refresh behavior:**
+- Drift metrics: every 30 seconds (smooth number transition animation)
+- Alert list: manual refresh only (to avoid jarring new rows appearing)
+- Status indicator: real-time (connected via WebSocket)
+
+**Alert list item interaction:**
+- Click to expand: shows full alert details (user, IP, timestamp, SHAP values)
+- Expand in-place, not modal
+- Two actions per alert: `[Investigate]` `[Mark as benign]`
+
+---
+
+### Screen 5: Settings
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────────────────────────────┐                   │
+│ │ Left     │ │ ⚙️ Settings                       │                   │
+│ │ Sidebar  │ │                                  │                   │
+│ │          │ │ ── Microsoft 365 Connection ──    │                   │
+│ │          │ │ Status: Connected ✅              │                   │
+│ │          │ │ Tenant: Acme Corp                 │                   │
+│ │          │ │ Token expires: Jan 15, 2026       │                   │
+│ │          │ │ [Reconnect] [Disconnect]          │                   │
+│ │          │ │                                  │                   │
+│ │          │ │ ── Notifications ──               │                   │
+│ │          │ │ Browser notifications: [Toggle]   │                   │
+│ │          │ │ Email alerts: [Toggle]             │                   │
+│ │          │ │                                  │                   │
+│ │          │ │ ── Preferences ──                 │                   │
+│ │          │ │ Theme: [Light / Dark / System]     │                   │
+│ │          │ │ Default time range: [30 days ▼]   │                   │
+│ │          │ │                                  │                   │
+│ └──────────┘ └──────────────────────────────────┘                   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 5. Component Library
+
+### 5.1 Chat Components
+
+| Component | Description | States |
+|---|---|---|
+| `AgentMessage` | Agent's message bubble | Default, Streaming, Error |
+| `UserMessage` | User's message bubble | Default |
+| `GatePrompt` | Gate action buttons inline | Pending, Approved, Modified, Cancelled |
+| `ProgressBar` | Inline progress indicator | Indeterminate, Determinate (%), Paused, Error |
+| `SuggestionChip` | Clickable question chip | Default, Hover, Active, Dismissed |
+| `ExpandableCard` | Simple content (collapsible) | Collapsed, Expanded |
+| `ModalOverlay` | Complex content (charts, tables) | Closed, Open |
+
+### 5.2 Layout Components
+
+| Component | Description |
+|---|---|
+| `LeftSidebar` | Conversation list, navigation |
+| `RightPanel` | Context panel, collapsible |
+| `AppShell` | Main layout container |
+
+### 5.3 Shared Components
+
+| Component | Description | States |
+|---|---|---|
+| `Button` | Primary action | Default, Hover, Active, Disabled, Loading |
+| `Badge` | Status indicator | Default, Numbered, Pulsing |
+| `Toast` | Non-critical notification | Success, Warning, Error, Info |
+| `Skeleton` | Loading placeholder | Text, Card, Chart |
+| `EmptyState` | No data state | Default, Actionable |
+
+---
+
+## 6. Interaction Patterns
+
+### 6.1 Chat Message Flow
+
+```
+User sends message
+  → Message appears instantly (no animation)
+  → Agent message starts streaming (typewriter effect, ~30 chars/sec)
+  → If agent needs to show rich content:
+    → Simple (progress, chips): inline, no delay
+    → Complex (charts, tables): inline with [View] link, click to expand modal
+  → If agent hits a gate:
+    → Gate prompt appears at end of message
+    → Buttons are enabled immediately
+    → User clicks button → button disables, shows confirmation state
+```
+
+### 6.2 Gate Interaction Flow
+
+```
+Gate prompt appears
+  → User sees 3-4 action buttons
+  → User hovers over button: subtle lift + shadow
+  → User clicks button:
+    → Button enters "loading" state (spinner)
+    → Agent acknowledges: "Understood. Proceeding with..."
+    → Pipeline resumes
+  → If user clicks "Modify":
+    → Inline form appears (not modal) asking what to change
+    → Agent suggests modifications based on user input
+    → User confirms modifications → gate closes
+```
+
+### 6.3 EDA Question Flow
+
+```
+EDA summary appears
+  → Suggestion chips appear below summary (max 4)
+  → Chips are animated in (stagger, 100ms apart)
+  → User can:
+    → Click a chip → chip enters "asked" state, agent responds
+    → Type free-form question → chips remain visible
+    → Ignore chips → chips fade after 60s
+  → After agent responds to a question:
+    → New suggestion chips may appear based on context
+    → Previous chips are replaced
+```
+
+### 6.4 Expandable Content Flow
+
+```
+User clicks [View] or expandable card header
+  → If simple: inline expansion (accordion, 200ms ease)
+  → If complex: modal overlay (fade in, 150ms)
+    → Modal has backdrop (dark, 50% opacity)
+    → Click backdrop or press Escape to close
+    → Modal scrolls independently
+    → Focus trapped inside modal when open
+```
+
+### 6.5 Notification Flow
+
+```
+Event occurs (training complete, drift detected, gate needed)
+  → If user is in the conversation:
+    → Agent message appears inline (no notification needed)
+  → If user is in a different conversation:
+    → Left sidebar: conversation badge updates (⚠️ or number)
+    → Browser notification (if permitted): deep-links to conversation
+  → If user is on dashboard:
+    → In-app toast appears (bottom-right)
+    → Dashboard auto-updates
+```
+
+---
+
+## 7. Edge Cases & Error States
+
+### 7.1 Error Card Component
+
+```
+┌─ Error ────────────────────────────────────────┐
+│ ❌ Data pull failed                            │
+│                                                │
+│ M365 API returned 429: Rate limit exceeded     │
+│                                                │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐      │
+│ │🔄 Retry  │  │⏸ Pause  │  │❌ Cancel │      │
+│ └──────────┘  └──────────┘  └──────────┘      │
+│                                                │
+│ [Show technical details ▼]                     │
+│   → Expands to show: request ID, timestamp,   │
+│     full error message, stack trace            │
+└────────────────────────────────────────────────┘
+```
+
+**Error severity levels:**
+
+| Level | Color | Behavior |
+|---|---|---|
+| Critical | Red | Pipeline stops. User MUST act. |
+| Warning | Amber | Pipeline continues but user should know. |
+| Info | Blue | Informational, no action needed. |
+
+### 7.2 All Edge Cases
+
+| Category | Case | UI Response |
+|---|---|---|
+| **Data** | No data for time range | "No logs found for [range]. Available: [suggested range]. Use this?" |
+| **Data** | Partial data pull | "Pulled 800K of 1.2M records. [Proceed with available] [Retry remaining]" |
+| **Data** | Data too large | "2M records detected. [Sample 100K for speed] [Pull all (slower)]" |
+| **Data** | Schema mismatch | "Field 'Timestamp' has unexpected format. [Auto-convert] [Cancel]" |
+| **Auth** | Token expired | Pipeline pauses, "M365 token expired. [Reconnect]" |
+| **Auth** | Insufficient permissions | "Your account can't read audit logs. Contact admin or [use sample data]" |
+| **Training** | No GPU available | "[Queue for later] [Run on CPU (~3x slower)]" |
+| **Training** | Training diverges | "Loss exploded at epoch 5. [Retry with lower LR] [Review data]" |
+| **Training** | OOM | "Out of memory. Reducing batch size. Resuming..." |
+| **Training** | Long training (>15 min) | Background notification: "Training complete! [View results]" |
+| **Model** | FPR too high | "FPR is 3.2%. Will cause alert fatigue. [Review FPs] [Retrain]" |
+| **Model** | Red team fails | "Evasion attack success: 34%. [Review examples] [Retrain]" |
+| **Model** | Latency too high | "120ms latency. [Try lighter model] [Optimize features]" |
+| **Deploy** | Canary alert spike | "FPR jumped to 4.1%. Auto-paused. [Investigate] [Rollback]" |
+| **Deploy** | Canary timeout | "Canary running 48h. [Extend] [Promote] [Rollback]" |
+| **Monitoring** | Drift detected | "Concept drift detected. [Auto-retrain] [Investigate] [Ignore]" |
+| **Monitoring** | Auto-retrain fails | "Insufficient new data. [Manual retrain] [Extend current model]" |
+| **Monitoring** | Alert volume spike | "10x normal alerts. [View details] [Pause model] [Page on-call]" |
+| **Session** | Browser crash | Rediscover state on reload, show "Resuming from last checkpoint" |
+| **Session** | Network lost | "Connection lost. Data cached. [Retry from where we left off]" |
+| **Session** | Session timeout | Auto-save state, prompt re-login, resume from last gate |
+| **Concurrency** | Another user editing | "User X is reviewing Gate 3. Waiting..." (read-only mode) |
+| **Agent** | Agent error | Friendly message + "Show technical details" expandable section |
+
+### 7.3 Empty State Patterns
+
+| State | Message | Action |
+|---|---|---|
+| No conversations | "Start a new conversation to begin" | [New Chat +] button prominent |
+| No M365 connected | "Connect your Microsoft 365 tenant to start" | [Connect M365] CTA |
+| No data available | "No audit logs found. Ensure logging is enabled in M365 admin." | Link to M365 docs |
+| Pipeline idle | "Ready to start. What would you like to detect?" | Suggestion chips |
+
+---
+
+## 8. Responsive Behavior
+
+### Breakpoints
+
+| Breakpoint | Width | Layout |
+|---|---|---|
+| Desktop | ≥1280px | Full 3-column (sidebar + chat + panel) |
+| Laptop | 1024-1279px | Sidebar collapsed to icons, panel collapsible |
+| Tablet | 768-1023px | Sidebar as drawer, panel hidden, full-width chat |
+| Mobile | <768px | Bottom nav, single column, panel as modal |
+
+### Tablet Behavior
+- Left sidebar becomes a hamburger menu drawer
+- Right panel hidden by default, accessible via "Context" button
+- Chat takes full width
+- Gate buttons stack vertically instead of horizontal row
+
+### Mobile Behavior
+- Bottom navigation bar: Chat | Dashboard | Settings
+- Chat is full width, full height
+- Context panel opens as full-screen overlay
+- Suggestion chips scroll horizontally
+- Modals are full-screen on mobile
+
+---
+
+## 9. Accessibility
+
+### WCAG 2.1 AA Compliance
+
+| Requirement | Implementation |
+|---|---|
+| Color contrast | 4.5:1 minimum for text, 3:1 for large text |
+| Keyboard navigation | All interactive elements focusable, visible focus ring |
+| Screen reader | ARIA labels for all buttons, gates announced as live regions |
+| Focus management | Focus moves to new agent message on receive, to gate when active |
+| Reduced motion | Respect `prefers-reduced-motion`: disable typewriter, progress animations |
+| Dark mode | Full dark theme with proper contrast ratios |
+
+### Key ARIA Patterns
+
+- **Gate buttons:** `role="group"` with `aria-label="Gate 1 actions"`
+- **Agent message:** `role="article"` with `aria-live="polite"` for streaming
+- **Suggestion chips:** `role="list"` container, each chip `role="button"`
+- **Progress bar:** `role="progressbar"` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`
+- **Modal:** `role="dialog"` with `aria-modal="true"`, focus trapped
+
+---
+
+## 10. Design Tokens
+
+### Colors
+
+```css
+/* Primary */
+--color-primary: #6366F1;        /* Indigo - primary actions */
+--color-primary-hover: #4F46E5;
+--color-primary-light: #EEF2FF;
+
+/* Success */
+--color-success: #10B981;        /* Green - approved, healthy */
+--color-success-light: #ECFDF5;
+
+/* Warning */
+--color-warning: #F59E0B;        /* Amber - gates, alerts */
+--color-warning-light: #FFFBEB;
+
+/* Error */
+--color-error: #EF4444;          /* Red - errors, critical */
+--color-error-light: #FEF2F2;
+
+/* Neutral */
+--color-bg: #FFFFFF;
+--color-bg-secondary: #F9FAFB;
+--color-text-primary: #111827;
+--color-text-secondary: #6B7280;
+--color-border: #E5E7EB;
+
+/* Dark mode */
+--color-bg-dark: #111827;
+--color-bg-secondary-dark: #1F2937;
+--color-text-primary-dark: #F9FAFB;
+--color-text-secondary-dark: #9CA3AF;
+--color-border-dark: #374151;
+```
+
+### Typography
+
+```css
+/* Font */
+--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+/* Sizes */
+--text-xs: 0.75rem;     /* 12px - labels, badges */
+--text-sm: 0.875rem;    /* 14px - secondary text */
+--text-base: 1rem;      /* 16px - body */
+--text-lg: 1.125rem;    /* 18px - headings */
+--text-xl: 1.25rem;     /* 20px - screen titles */
+
+/* Weights */
+--font-normal: 400;
+--font-medium: 500;
+--font-semibold: 600;
+--font-bold: 700;
+```
+
+### Spacing
+
+```css
+--space-1: 0.25rem;     /* 4px */
+--space-2: 0.5rem;      /* 8px */
+--space-3: 0.75rem;     /* 12px */
+--space-4: 1rem;        /* 16px */
+--space-5: 1.25rem;     /* 20px */
+--space-6: 1.5rem;      /* 24px */
+--space-8: 2rem;        /* 32px */
+--space-10: 2.5rem;     /* 40px */
+```
+
+### Shadows
+
+```css
+--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+--shadow-gate: 0 4px 12px rgba(99, 102, 241, 0.15);  /* Gate button glow */
+```
+
+### Border Radius
+
+```css
+--radius-sm: 0.375rem;   /* 6px - chips, small buttons */
+--radius-md: 0.5rem;     /* 8px - cards, inputs */
+--radius-lg: 0.75rem;    /* 12px - modals */
+--radius-full: 9999px;   /* Pills, avatars */
+```
+
+### Animations
+
+```css
+/* Transitions */
+--transition-fast: 150ms ease;
+--transition-normal: 200ms ease;
+--transition-slow: 300ms ease;
+
+/* Typewriter */
+--typewriter-speed: 30ms per character;
+
+/* Progress bar */
+--progress-height: 4px;
+--progress-animation: 200ms ease;
+```
+
+---
+
+## Appendix A: Screen Flow Diagram
+
+```
+[Login] → [Tenant Selection] → [Chat Home]
+                                   ↓
+                            [User types message]
+                                   ↓
+                            [Agent proposes plan]
+                                   ↓
+                         [Gate 1: Approve/Modify/Cancel]
+                                   ↓
+                            [Data pull + progress]
+                                   ↓
+                        [EDA report + suggestion chips]
+                                   ↓
+                      [Interactive EDA questions loop]
+                                   ↓
+                         [Gate 2: Approve/Modify/Re-run]
+                                   ↓
+                         [Feature engineering inline]
+                                   ↓
+                        [Training + progress display]
+                                   ↓
+                    [Gate 3: Deploy/Review SHAP/Retrain]
+                                   ↓
+                         [Deployment stages]
+                                   ↓
+                       [Monitoring dashboard]
+                                   ↓
+                        [Drift → retrain loop]
+```
+
+---
+
+## Appendix B: Conversation States
+
+| State | Agent | User Input | Progress | Gate |
+|---|---|---|---|---|
+| Idle | Awaiting input | Enabled | Hidden | Hidden |
+| Processing | Streaming response | Disabled | Visible | Hidden |
+| Gate Active | Waiting for decision | Enabled (contextual) | Visible | Visible |
+| Error | Showing error card | Enabled (retry/cancel) | Hidden | Hidden |
+| Complete | Showing results | Enabled | Hidden | Hidden |
+| Paused | Showing pause state | Disabled | Paused | Hidden |
+
+---
+
+*End of Design Document*
